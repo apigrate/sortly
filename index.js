@@ -51,6 +51,7 @@ class Sortly{
 
   //Custom Fields
   async listCustomFields(opts){ return this.get(`/custom_fields`, opts); }
+  async getCustomField(id){ return this.get(`/custom_fields/${id}`); }
 
   //Items
   async cloneItem(id, payload){ return this.post(`/items/${id}/move`, payload); } //payload.quantity, payload.folder_id, payload.include_subtree
