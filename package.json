@@ -1,6 +1,6 @@
 {
   "name": "@apigrate/sortly",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Sortly API connectors for NodeJS",
   "main": "index.js",
   "dependencies": {
