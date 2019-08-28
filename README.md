@@ -24,9 +24,10 @@ See [Sortly API Docs](https://sortlyapi.docs.apiary.io/#introduction/rate-limiti
 Note: nothing returned on success
 
 ### Custom Fields
+#### listCustomFields(opts)
+#### getCustomField(id)
 
 #### Examples
-
 ```javascript
 const {Sortly}  = require('@apigrate/sortly');
 const debug     = require('debug')('gr8:sortly');
