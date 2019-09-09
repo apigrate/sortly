@@ -21,6 +21,7 @@ const qs           = require('qs');
  * API connector for Sortly
  *
  * See API documentation at: https://sortlyapi.docs.apiary.io/
+ * @version 1.1.0
  *
  */
 class Sortly{
@@ -82,17 +83,17 @@ class Sortly{
     try{
       let qstring = qs.stringify(opts);
       let path = `${uri}${qstring?'?'+qstring:''}`;
-      debug(`POST ${path}`);
+      debug(`POST ${path}\n\tpayload: ${JSON.stringify(entity)}`);
 
       let resp = await this.baseRequest({
         uri: path,
         method: 'POST',
         body: entity
       });
-      return this.handleResponse(resp);
+      return this.handleResponse(resp, entity);
 
     }catch(ex){
-      return this.handleResponse(ex);
+      return this.handleResponse(ex, entity);
     }
   }//post method
 
@@ -100,17 +101,17 @@ class Sortly{
     try{
       let qstring = qs.stringify(opts);
       let path = `${uri}${qstring?'?'+qstring:''}`;
-      debug(`PUT ${path}`);
+      debug(`PUT ${path}\n\tpayload: ${JSON.stringify(entity)}`);
 
       let resp = await this.baseRequest({
         uri: path,
         method: 'PUT',
         body: entity
       });
-      return this.handleResponse(resp);
+      return this.handleResponse(resp, entity);
 
     }catch(ex){
-      return this.handleResponse(ex);
+      return this.handleResponse(ex, entity);
     }
   }//put method
 
@@ -135,7 +136,7 @@ class Sortly{
 
 
   //Note, this handles both the response and error payloads from request-promise-native.
-  handleResponse(resp){
+  handleResponse(resp, reqbody){
     // debug(`HTTP-${resp.statusCode}`);
     // debug(`Response Headers:\n${JSON.stringify(resp.headers,null,2)}`);
     debug(`Response:\n${JSON.stringify(resp)}`);
@@ -163,28 +164,29 @@ class Sortly{
       if (resp.statusCode >= 400 && resp.statusCode < 500) {
         switch(resp.statusCode){
           case 400:
-          throw new Error(`Request Error. ${resp.message}`);
+            throw new Error(`Request Error. ${resp.message}\n\tsent:${reqbody ? JSON.stringify(reqbody) : ""}\n\treceived:${resp.body}`);
+
 
           case 401:
-          debug(resp.message)
-          throw new Error(`Authorization Error. ${resp.message}`);
+            debug(resp.message)
+            throw new Error(`Authorization Error. ${resp.message}`);
 
           case 404:
-          debug(resp.message)
-          return null; //Don't throw an error, return null.
+            debug(resp.message)
+            return null; //Don't throw an error, return null.
 
           case 429:
-          throw new RateLimitExceeded(`Sortly rate limit exceeded. Try again in ${this.rate_limit_reset} seconds.`);
+            throw new RateLimitExceeded(`Sortly rate limit exceeded. Try again in ${this.rate_limit_reset} seconds.`);
 
           default:
-          throw new Error(`Unhandled Error (HTTP-${resp.statusCode}). ${resp.message}`);
+            throw new Error(`Unhandled Error (HTTP-${resp.statusCode}). ${resp.message}`);
 
         }
 
       } else if( resp.statusCode >=500){
         debug(`Server error. HTTP-${resp.statusCode}`);
         //response body may not be parseable. Return error with raw body.
-        throw new Error(`Sortly Server Error (HTTP-${resp.statusCode}). Details: ${resp.body}`);
+        throw new Error(`Sortly Server Error (HTTP-${resp.statusCode}).\n\tsent:${reqbody ? JSON.stringify(reqbody) : ""}\n\treceived:${resp.body}`);
       } else {
         debug(`HTTP-${resp.statusCode}`);
         //Some other potentially valid response. Return the payload.
