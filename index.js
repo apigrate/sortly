@@ -21,7 +21,7 @@ const qs           = require('qs');
  * API connector for Sortly
  *
  * See API documentation at: https://sortlyapi.docs.apiary.io/
- * @version 1.1.0
+ * @version 1.1.2
  *
  */
 class Sortly{
