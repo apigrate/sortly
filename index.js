@@ -58,7 +58,7 @@ class Sortly{
   async cloneItem(id, payload){ return this.post(`/items/${id}/move`, payload); } //payload.quantity, payload.folder_id, payload.include_subtree
   async createItem(item){ return this.post(`/items`, item); }
   async deleteItem(id){ return this.delete(`/items/${id}`); }
-  async getItem(id){ return this.get(`/items/${id}`); }
+  async getItem(id, opts){ return this.get(`/items/${id}`, opts); }
   async listItems(opts){ return this.get(`/items`, opts); }
   async listRecentItems(opts){ return this.get(`/items/recent`, opts); }
   async moveItem(id, payload){ return this.post(`/items/${id}/move`, payload); } //payload.quantity required, payload.folder_id optional else root
