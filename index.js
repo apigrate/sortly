@@ -21,7 +21,7 @@ const qs           = require('qs');
  * API connector for Sortly
  *
  * See API documentation at: https://sortlyapi.docs.apiary.io/
- * @version 1.1.2
+ * @version 1.1.3
  *
  */
 class Sortly{
@@ -173,7 +173,10 @@ class Sortly{
 
           case 404:
             debug(resp.message)
-            return null; //Don't throw an error, return null.
+            if (resp.response.request.method === "GET") {
+              return null; //Don't throw an error, return null.
+            }
+            throw new Error(`Invalid URI (HTTP-${resp.statusCode}):  ${resp.response.request.uri.path}`);
 
           case 429:
             throw new RateLimitExceeded(`Sortly rate limit exceeded. Try again in ${this.rate_limit_reset} seconds.`);
