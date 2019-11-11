@@ -21,7 +21,7 @@ const qs           = require('qs');
  * API connector for Sortly
  *
  * See API documentation at: https://sortlyapi.docs.apiary.io/
- * @version 1.1.4
+ * @version 1.1.5
  *
  */
 class Sortly{
@@ -89,7 +89,7 @@ class Sortly{
     try{
       let qstring = qs.stringify(opts);
       req.uri = `${uri}${qstring?'?'+qstring:''}`;
-      req.entity = entity;
+      req.body = entity;
       debug(`POST ${req.uri}\n\tpayload: ${JSON.stringify(entity)}`);
       
       let resp = await this.baseRequest(req);
@@ -107,7 +107,7 @@ class Sortly{
     try{
       let qstring = qs.stringify(opts);
       req.uri = `${uri}${qstring?'?'+qstring:''}`;
-      req.entity = entity;
+      req.body = entity;
       debug(`PUT ${req.uri}\n\tpayload: ${JSON.stringify(entity)}`);
 
       let resp = await this.baseRequest(req);
