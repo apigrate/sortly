@@ -21,7 +21,7 @@ const qs           = require('qs');
  * API connector for Sortly
  *
  * See API documentation at: https://sortlyapi.docs.apiary.io/
- * @version 1.1.3
+ * @version 1.1.4
  *
  */
 class Sortly{
@@ -65,78 +65,79 @@ class Sortly{
   async updateItem(id, item){ return this.put(`/items/${id}`, item); }//Note: nothing returned on success
 
   async get(uri, opts){
+    let req = {
+      method: 'GET'
+    };
     try{
       let qstring = qs.stringify(opts);
-      let path = `${uri}${qstring?'?'+qstring:''}`;
-      debug(`GET ${path}`);
+      req.uri = `${uri}${qstring?'?'+qstring:''}`;
+      debug(`GET ${req.uri}`);
 
-      let resp = await this.baseRequest(path);
-      return this.handleResponse(resp);
+      let resp = await this.baseRequest(req);
+      return this.handleResponse(resp, null, req);
 
     }catch(ex){
-      return this.handleResponse(ex);
+      return this.handleResponse(ex, null, req);
     }
   }//get method
 
 
   async post(uri, entity, opts){
+    let req = {
+      method: 'POST'
+    };
     try{
       let qstring = qs.stringify(opts);
-      let path = `${uri}${qstring?'?'+qstring:''}`;
-      debug(`POST ${path}\n\tpayload: ${JSON.stringify(entity)}`);
-
-      let resp = await this.baseRequest({
-        uri: path,
-        method: 'POST',
-        body: entity
-      });
-      return this.handleResponse(resp, entity);
+      req.uri = `${uri}${qstring?'?'+qstring:''}`;
+      req.entity = entity;
+      debug(`POST ${req.uri}\n\tpayload: ${JSON.stringify(entity)}`);
+      
+      let resp = await this.baseRequest(req);
+      return this.handleResponse(resp, entity, req);
 
     }catch(ex){
-      return this.handleResponse(ex, entity);
+      return this.handleResponse(ex, entity, req);
     }
   }//post method
 
   async put(uri, entity, opts){
+    let req = {
+      method: 'PUT'
+    };
     try{
       let qstring = qs.stringify(opts);
-      let path = `${uri}${qstring?'?'+qstring:''}`;
-      debug(`PUT ${path}\n\tpayload: ${JSON.stringify(entity)}`);
+      req.uri = `${uri}${qstring?'?'+qstring:''}`;
+      req.entity = entity;
+      debug(`PUT ${req.uri}\n\tpayload: ${JSON.stringify(entity)}`);
 
-      let resp = await this.baseRequest({
-        uri: path,
-        method: 'PUT',
-        body: entity
-      });
-      return this.handleResponse(resp, entity);
+      let resp = await this.baseRequest(req);
+      return this.handleResponse(resp, entity, req);
 
     }catch(ex){
-      return this.handleResponse(ex, entity);
+      return this.handleResponse(ex, entity, req);
     }
   }//put method
 
   async delete(uri, opts){
+    let req = {
+      method: 'DELETE'
+    };
     try{
       let qstring = qs.stringify(opts);
-      let path = `${uri}${qstring?'?'+qstring:''}`;
-      debug(`DELETE ${path}`);
+      req.uri = `${uri}${qstring?'?'+qstring:''}`;
+      debug(`DELETE ${req.uri}`);
 
-      let resp = await this.baseRequest({
-        uri: path,
-        method: 'DELETE'
-      });
-      return this.handleResponse(resp);
+      let resp = await this.baseRequest(req);
+      return this.handleResponse(resp, null, req);
 
     }catch(ex){
-      return this.handleResponse(ex);
+      return this.handleResponse(ex, null, req);
     }
   }//post method
 
-  //TODO: put/delete
-
 
   //Note, this handles both the response and error payloads from request-promise-native.
-  handleResponse(resp, reqbody){
+  handleResponse(resp, reqbody, req){
     // debug(`HTTP-${resp.statusCode}`);
     // debug(`Response Headers:\n${JSON.stringify(resp.headers,null,2)}`);
     debug(`Response:\n${JSON.stringify(resp)}`);
@@ -164,34 +165,34 @@ class Sortly{
       if (resp.statusCode >= 400 && resp.statusCode < 500) {
         switch(resp.statusCode){
           case 400:
-            throw new Error(`Request Error. ${resp.message}\n\tsent:${reqbody ? JSON.stringify(reqbody) : ""}\n\treceived:${resp.body}`);
+            throw new Error(`Request Error on ${req.method} ${req.uri} (HTTP-${resp.statusCode}). ${resp.message}\n\tsent:${reqbody ? JSON.stringify(reqbody) : ""}\n\treceived:${JSON.stringify(resp.response.body)}`);
 
 
           case 401:
             debug(resp.message)
-            throw new Error(`Authorization Error. ${resp.message}`);
+            throw new Error(`Authorization Error on ${req.method} ${req.uri} (HTTP-${resp.statusCode}). ${resp.message}`);
 
           case 404:
             debug(resp.message)
-            if (resp.response.request.method === "GET") {
+            if (req.method === "GET") {
               return null; //Don't throw an error, return null.
             }
-            throw new Error(`Invalid URI (HTTP-${resp.statusCode}):  ${resp.response.request.uri.path}`);
+            throw new Error(`Invalid URI on ${req.method} ${req.uri} (HTTP-${resp.statusCode}).`);
 
           case 429:
-            throw new RateLimitExceeded(`Sortly rate limit exceeded. Try again in ${this.rate_limit_reset} seconds.`);
+            throw new RateLimitExceeded(`Sortly rate limit exceeded on ${req.method} ${req.uri}. Try again in ${this.rate_limit_reset} seconds.`);
 
           default:
-            throw new Error(`Unhandled Error (HTTP-${resp.statusCode}). ${resp.message}`);
+            throw new Error(`Unhandled Error on ${req.method} ${req.uri} (HTTP-${resp.statusCode}). ${resp.message}`);
 
         }
 
       } else if( resp.statusCode >=500){
         debug(`Server error. HTTP-${resp.statusCode}`);
         //response body may not be parseable. Return error with raw body.
-        throw new Error(`Sortly Server Error (HTTP-${resp.statusCode}).\n\tsent:${reqbody ? JSON.stringify(reqbody) : ""}\n\treceived:${resp.body}`);
+        throw new Error(`Sortly Server Error on ${req.method} ${req.uri} (HTTP-${resp.statusCode}).\n\tsent:${reqbody ? JSON.stringify(reqbody) : ""}\n\treceived:${JSON.stringify(resp.response.body)}`);
       } else {
-        debug(`HTTP-${resp.statusCode}`);
+        debug(`Error on ${req.method} ${req.uri}. HTTP-${resp.statusCode}`);
         //Some other potentially valid response. Return the payload.
         return responseBody;
       }
