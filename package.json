@@ -1,17 +1,17 @@
 {
   "name": "@apigrate/sortly",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Sortly API connectors for NodeJS",
   "main": "index.js",
   "dependencies": {
-    "debug": "^4.1.1",
+    "debug": "^4.2.0",
     "node-fetch": "^2.6.1",
-    "query-string": "^6.13.4"
+    "query-string": "^6.13.5"
   },
   "devDependencies": {
     "dotenv": "^8.2.0",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0"
+    "moment": "^2.29.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
