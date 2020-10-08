@@ -26,16 +26,48 @@ class SortlyConnector{
    * Creates an item.
    * 
    * #### Special Note about `tags`
-   * The API returns a `tag_names` property (array of strings) on a fetch or search result.
-   * However to create tags, you must submit a `tags` array whose contents follow the example:
+   * The API returns a `tag_names` property (array of strings) on a fetch, search result, and also
+   * after creating the item.
+   * 
+   * However to create tags, on the request you must submit a `tags` array whose contents follow the example:
    * @example 
    * { ...
    *   tags: [ {name: "Tag1"}, {name: "Tag2"} ]
    * }
-   * @see https://sortlyapi.docs.apiary.io/#reference/0/items/fetch-item
-   *  
    * 
-   * @param {object} item @see https://sortlyapi.docs.apiary.io/#reference/0/items/create-an-item
+   * 
+   * @param {object} item The item to create.
+   * @see https://sortlyapi.docs.apiary.io/#reference/0/items/create-an-item
+   * @returns the item itself (including the generated id)
+   * @example
+   * { 
+   *   "id: 17620955,
+   *   "name": "test item",
+   *   "price": null,
+   *   "quantity": 1,
+   *   "min_quantity": null,
+   *   "notes": null,
+   *   "parent_id": null,
+   *   "sid": "S0ADKT2798",
+   *   "label_url": null,
+   *   "label_url_type": null,
+   *   "label_url_extra": null,
+   *   "label_url_extra_type": null,
+   *   "tag_names": [
+   *    "brown",
+   *     "large"
+   *   ],
+   *   "type": "item",
+   *   "created_at": "2020-10-08T15:33:12.949Z",
+   *   "updated_at": "2020-10-08T15:33:12.975Z",
+   *   "custom_attribute_values": [
+   *    {
+   *      "value": null,
+   *      "custom_attribute_id": 162033,
+   *      "custom_attribute_name": "15 day mark since transfer to salon"
+   *    },//...
+   *   ]
+   * }
    */
   async createItem(item){
     if(!item) throw new ApiError(`Unable to create item. Data is missing.`);
@@ -220,9 +252,9 @@ class SortlyConnector{
    *   ]
    */
   async listCustomAttributes(per_page, page){
-    let q = null;
-    if(per_page) q={per_page};
-    if(page) q={page};
+    let q = {};
+    if(per_page) q.per_page=per_page;
+    if(page) q.page=page;
     return await this.doFetch('GET', `${this.base_url}/custom_fields`, q);
   }
 
